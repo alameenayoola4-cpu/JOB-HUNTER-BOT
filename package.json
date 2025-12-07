@@ -1,0 +1,20 @@
+{
+  "name": "job-hunter-bot",
+  "version": "1.0.0",
+  "description": "A bot to fetch and send job listings.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["jobs", "bot", "telegram"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "cron": "^3.1.0",
+    "dotenv": "^16.3.1",
+    "rss-parser": "^3.13.0"
+  }
+}
