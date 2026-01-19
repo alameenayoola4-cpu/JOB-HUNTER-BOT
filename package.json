@@ -1,20 +1,29 @@
 {
   "name": "job-hunter-bot",
   "version": "1.0.0",
-  "description": "A bot to fetch and send job listings.",
+  "description": "A Telegram bot to fetch and send job listings from multiple platforms.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "node index.js",
+    "test-scrapers": "node scripts/test-scrapers.js"
   },
-  "keywords": ["jobs", "bot", "telegram"],
+  "keywords": [
+    "jobs",
+    "bot",
+    "telegram",
+    "vercel"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-telegram-bot-api": "^0.61.0",
+    "@vercel/kv": "^1.0.0",
     "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12",
     "cron": "^3.1.0",
     "dotenv": "^16.3.1",
     "rss-parser": "^3.13.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

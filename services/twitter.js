@@ -1,30 +1,27 @@
 const axios = require("axios");
-const cheerio = require("cheerio");
 
 module.exports = async function () {
-  const q = "frontend developer hiring remote";
-  const url = `https://nitter.net/search?f=tweets&q=${encodeURIComponent(q)}`;
-
-  const jobs = [];
+  // Himalayas.app API - free remote job API
+  const url = "https://himalayas.app/jobs/api?limit=20";
 
   try {
-    const res = await axios.get(url);
-    const $ = cheerio.load(res.data);
-
-    $(".tweet-content").each((_, el) => {
-      const text = $(el).text().trim();
-      const link = "https://x.com" + $(el).find("a").attr("href");
-
-      jobs.push({
-        title: text.slice(0, 50) + "...",
-        company: "X (Twitter)",
-        url: link,
-        source: "Twitter",
-      });
+    const res = await axios.get(url, {
+      headers: {
+        "User-Agent": "JobHunterBot/1.0",
+      },
     });
 
-    return jobs;
-  } catch {
+    const jobs = res.data.jobs || [];
+
+    return jobs.slice(0, 15).map((job) => ({
+      title: job.title,
+      company: job.companyName,
+      location: job.locationRestrictions?.[0] || "Worldwide",
+      url: `https://himalayas.app/jobs/${job.slug}`,
+      source: "Himalayas",
+    }));
+  } catch (err) {
+    console.error("Himalayas fetch error:", err.message);
     return [];
   }
 };

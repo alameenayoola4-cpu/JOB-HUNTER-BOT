@@ -1,35 +1,36 @@
-const fs = require("fs");
-const path = "./database/jobs.json";
+const { kv } = require("@vercel/kv");
 
-
-function loadDB() {
-  try {
-    if (!fs.existsSync(path)) return [];
-    return JSON.parse(fs.readFileSync(path));
-  } catch (err) {
-    console.error("Error loading jobs database:", err);
-    return [];
-  }
-}
-
-
-function saveDB(data) {
-  try {
-    fs.writeFileSync(path, JSON.stringify(data, null, 2));
-  } catch (err) {
-    console.error("Error saving jobs database:", err);
-  }
-}
+const SEEN_JOBS_KEY = "seen_job_urls";
 
 module.exports = {
-  saveIfNew(job) {
-    const db = loadDB();
-    const exists = db.some((j) => j.url === job.url);
+  async saveIfNew(job) {
+    try {
+      // Check if we've seen this job URL before
+      const isMember = await kv.sismember(SEEN_JOBS_KEY, job.url);
 
-    if (exists) return false;
+      if (isMember) {
+        return false; // Already seen
+      }
 
-    db.push(job);
-    saveDB(db);
-    return true;
+      // Add to seen jobs set
+      await kv.sadd(SEEN_JOBS_KEY, job.url);
+
+      // Keep the set from growing too large (max 10000 entries)
+      const size = await kv.scard(SEEN_JOBS_KEY);
+      if (size > 10000) {
+        // Remove oldest entries (this is approximate since sets are unordered)
+        const members = await kv.smembers(SEEN_JOBS_KEY);
+        const toRemove = members.slice(0, 1000);
+        if (toRemove.length > 0) {
+          await kv.srem(SEEN_JOBS_KEY, ...toRemove);
+        }
+      }
+
+      return true; // New job
+    } catch (err) {
+      console.error("Database error:", err.message);
+      // If DB fails, treat as new job to avoid missing notifications
+      return true;
+    }
   },
 };
